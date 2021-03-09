@@ -1,0 +1,36 @@
+<!-- We don't need a full layout in this file because this page will be parsed with Ajax.  -->
+<div class="page" data-name="principal">
+    <div class="navbar">
+    </div>
+    <div class="page-content">
+        <div class="block-title">Recetas del día:</div>
+
+        <div class="card">
+            
+            <div class="list" id="publicacion-form">
+                <ul>
+                  <li class="item-content item-input">
+                    <div class="item-inner">
+                      <div class="item-title item-floating-label">Titula tu receta</div>
+                      <div class="item-input-wrap">
+                        <input type="text" name="name" id="receta-titulo">
+                        <span class="input-clear-button"></span>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="item-content item-input">
+                    <div class="item-inner">
+                        <!-- titulo debajo, aun sin definir -->
+                      <div class="item-title item-label"></div>
+                      <div class="item-input-wrap">
+                        <textarea placeholder="Describe paso a paso como realizarla" id="receta-descripcion"></textarea>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+                <button class="col button button-raised button-fill" id="btnPublicar">Publicar</button>
+            </div>
+            
+          </div>
+    </div>
+</div>
