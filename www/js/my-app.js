@@ -63,13 +63,46 @@ $$(document).on('page:init', '.page[data-name="index"]', function (e) {
 $$(document).on('page:init', '.page[data-name="registro"]', function (e) {
   $$('#btnRegistro2').on('click', fnRegister);
 
+  // $$('#btnVolver').on('click', function(){
+  //   // app.views.main.router.navigate("/index/");
+  //   alert("anda")
+  // });
   
 })
 
 $$(document).on('page:init', '.page[data-name="principal"]', function (e) {
   $$('#btnPublicar').on('click', fnPublicar);
 
+  function fnPublicar(){
+    // almaceno lo que quiero guardar
+    titulo = $$('#receta-titulo').val();
+    descripcion = $$('#receta-descripcion').val();
+
+    // guardo en la db
+      db.collection('publicaciones').doc().set({
+        titulo,
+        descripcion
+      })
+      .then(function(){
+        // limpio los input
+        $$('#receta-titulo').val('');
+        $$('#receta-descripcion').val('');
+      })
+      .catch(function(error){
+        console.error(error)
+      })
+  }
   
+  // de manera global muestro en tiempo real las publicaciones ya guardadas en la db
+  db.collection('publicaciones').onSnapshot((querySnapshot) =>{  
+    querySnapshot.forEach((doc)=>{
+      title = doc.data().titulo;
+      description = doc.data().descripcion; 
+      
+      posteo = "<div class='card'><div class='card-header'>"+title+"</div> <div class='card-content card-content-padding'>"+description+"</div> </div>";
+      $$('#cardPublicacion').append(posteo);
+    })
+  });
 })
 
 
@@ -92,6 +125,7 @@ function fnRegister(){
 
          datos = { Nombre: nombreR, Email: emailR };
          colUsuarios.doc(emailR).set(datos);
+         app.views.main.router.navigate("/principal/");
        })
        .catch(function(error) {
        // Handle Errors here.
@@ -104,7 +138,6 @@ function fnRegister(){
          }
          console.log(error);
        });
-       alert("q paso?");
 }
 
 function fnLogin(){
@@ -124,22 +157,3 @@ function fnLogin(){
   });
 }
 
-function fnPublicar(){
-
-  var guardarPublicacion = () => {
-    db.collection('publicaciones').doc().set({
-      titulo,
-      descripcion
-    });
-  }
-  var mostrarPublicacion = () => {
-    db.collection('publicaciones').get();
-  }
-
-
-  titulo = $$('#receta-titulo').val();
-  descripcion = $$('#receta-descripcion').val();
-
-  
-  guardarPublicacion(titulo, descripcion);
-}
