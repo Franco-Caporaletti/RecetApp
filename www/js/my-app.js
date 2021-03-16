@@ -26,6 +26,10 @@ var app = new Framework7({
       {
         path: '/registro/',
         url: 'registro.html',
+      },
+      {
+        path: '/perfil/',
+        url: 'perfil.html',
       }
     ]
     // ... other parameters
@@ -58,20 +62,66 @@ $$(document).on('page:init', '.page[data-name="index"]', function (e) {
     });
 
     $$('#btnLogin').on('click', fnLogin)
+
+    function fnLogin(){
+      email = $$('#emailLogin').val();
+      password = $$('#passLogin').val();
+    
+      firebase.auth().signInWithEmailAndPassword(email, password)
+      .then((user) => {
+        // Signed in
+        // ...
+        app.views.main.router.navigate("/principal/");
+      })
+      .catch((error) => {
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        alert(errorCode)
+      });
+    }
 })
 
 $$(document).on('page:init', '.page[data-name="registro"]', function (e) {
   $$('#btnRegistro2').on('click', fnRegister);
 
-  // $$('#btnVolver').on('click', function(){
-  //   // app.views.main.router.navigate("/index/");
-  //   alert("anda")
-  // });
+  function fnRegister(){
+    nombreR = $$('#nombreRegistro').val();
+    emailR = $$('#emailRegistro').val();
+    passwordR = $$('#passRegistro').val();
+  
+     firebase.auth().createUserWithEmailAndPassword(emailR, passwordR)
+         .then(function(){
+           alert("registrado crack!")
+  
+           datos = { Nombre: nombreR, Email: emailR };
+           colUsuarios.doc(emailR).set(datos);
+           app.views.main.router.navigate("/principal/");
+         })
+         .catch(function(error) {
+         // Handle Errors here.
+           var errorCode = error.code;
+           var errorMessage = error.message;
+           if (errorCode == 'auth/weak-password') {
+             alert('Clave muy débil.');
+           } else {
+             alert(errorMessage);
+           }
+           console.log(error);
+         });
+  }
   
 })
 
 $$(document).on('page:init', '.page[data-name="principal"]', function (e) {
   $$('#btnPublicar').on('click', fnPublicar);
+
+  // botones toolbar
+  $$('#btnPerfil').on('click', function(){
+    app.views.main.router.navigate("/perfil/");
+  });
+  $$('#btnHome').on('click', function(){
+    app.views.main.router.navigate("/principal/");
+  });
 
   function fnPublicar(){
     // almaceno lo que quiero guardar
@@ -105,6 +155,15 @@ $$(document).on('page:init', '.page[data-name="principal"]', function (e) {
   });
 })
 
+$$(document).on('page:init', '.page[data-name="perfil"]', function (e) {
+  // botones toolbar
+  $$('#btnPerfil').on('click', function(){
+    app.views.main.router.navigate("/perfil/");
+  });
+  $$('#btnHome').on('click', function(){
+    app.views.main.router.navigate("/principal/");
+  });
+})
 
 // Option 2. Using live 'page:init' event handlers for each page
 $$(document).on('page:init', '.page[data-name="about"]', function (e) {
@@ -114,46 +173,7 @@ $$(document).on('page:init', '.page[data-name="about"]', function (e) {
 })
 
 
-function fnRegister(){
-  nombreR = $$('#nombreRegistro').val();
-  emailR = $$('#emailRegistro').val();
-  passwordR = $$('#passRegistro').val();
 
-   firebase.auth().createUserWithEmailAndPassword(emailR, passwordR)
-       .then(function(){
-         alert("registrado crack!")
 
-         datos = { Nombre: nombreR, Email: emailR };
-         colUsuarios.doc(emailR).set(datos);
-         app.views.main.router.navigate("/principal/");
-       })
-       .catch(function(error) {
-       // Handle Errors here.
-         var errorCode = error.code;
-         var errorMessage = error.message;
-         if (errorCode == 'auth/weak-password') {
-           alert('Clave muy débil.');
-         } else {
-           alert(errorMessage);
-         }
-         console.log(error);
-       });
-}
 
-function fnLogin(){
-  email = $$('#emailLogin').val();
-  password = $$('#passLogin').val();
-
-  firebase.auth().signInWithEmailAndPassword(email, password)
-  .then((user) => {
-    // Signed in
-    // ...
-    app.views.main.router.navigate("/principal/");
-  })
-  .catch((error) => {
-    var errorCode = error.code;
-    var errorMessage = error.message;
-    alert(errorCode)
-  });
-}
 

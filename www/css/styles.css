@@ -6,8 +6,8 @@
   width: 60%;
 }
 
-/* Loader del index */
-/* @keyframes loader {
+/* Loader */
+ @keyframes loader {
     0% {
       width: 10%;
       transform: rotate(0deg);
@@ -118,4 +118,4 @@
     background: lightgray;
     border-radius: 20px;
     animation: shadow 2s infinite;
-  } */
+  }
