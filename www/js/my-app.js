@@ -58,7 +58,14 @@ $$(document).on('page:init', function (e) {
   // Do something here when page loaded and initialized
   console.log(e);
 })
+// Option 2. Using live 'page:init' event handlers for each page
+$$(document).on('page:init', '.page[data-name="about"]', function (e) {
+  // Do something here when page with data-name="about" attribute loaded and initialized
+  console.log(e);
 
+})
+
+/////////////////////////////////////////////// INDEX ////////////////////////////////////////////////////
 
 $$(document).on('page:init', '.page[data-name="index"]', function (e) {
   $$('#btnRegistro').on('click', function () {
@@ -84,6 +91,8 @@ $$(document).on('page:init', '.page[data-name="index"]', function (e) {
       });
   }
 })
+
+/////////////////////////////////////////////// REGISTRO ////////////////////////////////////////////////////
 
 $$(document).on('page:init', '.page[data-name="registro"]', function (e) {
   $$('#btnRegistro2').on('click', fnRegister);
@@ -116,9 +125,11 @@ $$(document).on('page:init', '.page[data-name="registro"]', function (e) {
 
 })
 
+/////////////////////////////////////////////// PRINCIPAL ////////////////////////////////////////////////////
+
 $$(document).on('page:init', '.page[data-name="principal"]', function (e) {
   $$('#btnPublicar').on('click', fnPublicar);
-  $$('#btnEliminar').on('click', fnEliminar);
+  
   // botones toolbar
   $$('#btnPerfil').on('click', function () {
     app.views.main.router.navigate("/perfil/");
@@ -134,7 +145,7 @@ $$(document).on('page:init', '.page[data-name="principal"]', function (e) {
     // almaceno lo que quiero guardar
     titulo = $$('#receta-titulo').val();
     descripcion = $$('#receta-descripcion').val();
-
+    
     // guardo en la db
     db.collection('publicaciones').doc().set({
       titulo,
@@ -149,34 +160,54 @@ $$(document).on('page:init', '.page[data-name="principal"]', function (e) {
         console.error(error)
       })
   }
+  const eliminarPublicacion = id => db.collection('publicaciones').doc(id).delete();
 
   // de manera global muestro en tiempo real las publicaciones ya guardadas en la db
   db.collection('publicaciones').onSnapshot((querySnapshot) => {
+    
     querySnapshot.forEach((doc) => {
+      
+      info = doc.data();
+      info.id = doc.id;
 
       title = doc.data().titulo;
       description = doc.data().descripcion;
-      identificador = doc.id;
+      
 
-      posteo = "<div class='card'><div class='card-header'>" + title + "</div> <div class='card-content card-content-padding'>" + description + "</div> <div class='card-footer'><p class='row'><button class='col button button-raised'>Modificar</button><button class='col button button-raised' id='btnEliminar'>Eliminar</button></p></div> </div>";
+      //posteo = "<div class='card'><div class='card-header'>" + title + "</div> <div class='card-content card-content-padding'>" + description + "</div> <div class='card-footer'><p class='row'><button class='col button button-raised'>Modificar</button><button class='col button button-raised boton-eliminar' data-id="+info.id+">Eliminar</button></p></div> </div>";
 
-      $$('#cardPublicacion').append(posteo);
+      
+
+      $$('#cardPublicacion').append(`<div class='card'>
+      <div class='card-header'> ${title} </div> 
+      <div class='card-content card-content-padding'> ${description} </div> 
+      <div class='card-footer'>
+      <p class='row'>
+      <button class='col button button-raised'>Modificar</button>
+      <button class='col button button-raised btn-eliminar' data-id=" ${info.id} ">Eliminar</button>
+      </p>
+      </div> 
+      </div>`);
+
+      var btnsEliminados = document.querySelectorAll('.btn-eliminar');
+      
+      btnsEliminados.forEach(btn =>{
+         btn.addEventListener('click', async(e) =>{
+           console.log('clickeado crack')
+          await eliminarPublicacion(e.target.dataset.id)
+         })
+      })
 
     })
   });
 
-  function fnEliminar(id) {
-    // borrar publicacion
-    db.collection("publicaciones").doc(id).delete().then(() => {
-      console.log("Document successfully deleted!");
-    }).catch((error) => {
-      console.error("Error removing document: ", error);
-    });
-  }
+  
 
 
 
 })
+
+/////////////////////////////////////////////// PERFIL ////////////////////////////////////////////////////
 
 $$(document).on('page:init', '.page[data-name="perfil"]', function (e) {
   // botones toolbar
@@ -191,6 +222,9 @@ $$(document).on('page:init', '.page[data-name="perfil"]', function (e) {
   });
 })
 
+
+/////////////////////////////////////////////// BUSCADOR ////////////////////////////////////////////////////
+
 $$(document).on('page:init', '.page[data-name="buscador"]', function (e) {
   // botones toolbar
   $$('#btnPerfil').on('click', function () {
@@ -204,12 +238,7 @@ $$(document).on('page:init', '.page[data-name="buscador"]', function (e) {
   });
 })
 
-// Option 2. Using live 'page:init' event handlers for each page
-$$(document).on('page:init', '.page[data-name="about"]', function (e) {
-  // Do something here when page with data-name="about" attribute loaded and initialized
-  console.log(e);
 
-})
 
 
 
