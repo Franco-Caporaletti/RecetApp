@@ -42,9 +42,11 @@ var app = new Framework7({
 var mainView = app.views.create('.view-main');
 
 var db = firebase.firestore()
+var auth = firebase.auth();
+
+
 var colUsuarios = db.collection("usuarios");
 
-var publicacionForm = $$('#publicacion-form');
 
 
 
@@ -65,7 +67,7 @@ $$(document).on('page:init', '.page[data-name="about"]', function (e) {
 
 })
 
-/////////////////////////////////////////////// INDEX ////////////////////////////////////////////////////
+/////////////////////////////////////////////// INDEX y LOGIN ////////////////////////////////////////////////////
 
 $$(document).on('page:init', '.page[data-name="index"]', function (e) {
   $$('#btnRegistro').on('click', function () {
@@ -78,10 +80,9 @@ $$(document).on('page:init', '.page[data-name="index"]', function (e) {
     email = $$('#emailLogin').val();
     password = $$('#passLogin').val();
 
-    firebase.auth().signInWithEmailAndPassword(email, password)
-      .then((user) => {
-        // Signed in
-        // ...
+    auth.signInWithEmailAndPassword(email, password)
+      .then(cred => {
+        console.log(cred.user)
         app.views.main.router.navigate("/principal/");
       })
       .catch((error) => {
@@ -101,13 +102,19 @@ $$(document).on('page:init', '.page[data-name="registro"]', function (e) {
     nombreR = $$('#nombreRegistro').val();
     emailR = $$('#emailRegistro').val();
     passwordR = $$('#passRegistro').val();
+    publicaciones = {};
 
-    firebase.auth().createUserWithEmailAndPassword(emailR, passwordR)
-      .then(function () {
-        alert("registrado crack!")
+    auth.createUserWithEmailAndPassword(emailR, passwordR)
 
-        datos = { Nombre: nombreR, Email: emailR };
-        colUsuarios.doc(emailR).set(datos);
+      .then(cred => {
+        console.log('esto es el cred: ', cred)
+        return db.collection('usuarios').doc(cred.user.uid).set({
+          nombreR,
+          emailR,
+          publicaciones
+        })
+      })
+      .then(()=>{
         app.views.main.router.navigate("/principal/");
       })
       .catch(function (error) {
@@ -141,70 +148,91 @@ $$(document).on('page:init', '.page[data-name="principal"]', function (e) {
     app.views.main.router.navigate("/buscador/");
   });
 
+
+
   function fnPublicar() {
     // almaceno lo que quiero guardar
     titulo = $$('#receta-titulo').val();
     descripcion = $$('#receta-descripcion').val();
+
     
-    // guardo en la db
-    db.collection('publicaciones').doc().set({
-      titulo,
-      descripcion
-    })
-      .then(function () {
-        // limpio los input
-        $$('#receta-titulo').val('');
-        $$('#receta-descripcion').val('');
-      })
-      .catch(function (error) {
-        console.error(error)
-      })
-  }
-  const eliminarPublicacion = id => db.collection('publicaciones').doc(id).delete();
+    let user = firebase.auth().currentUser
+    let uid = user.uid
 
-  // de manera global muestro en tiempo real las publicaciones ya guardadas en la db
-  db.collection('publicaciones').onSnapshot((querySnapshot) => {
+    //lo que quiero setear para guardar en la db
+    // let publicaciones = {
+    //   publicacion : {
+    //     Titulo: titulo,
+    //     Descripcion: descripcion
+    //   }
+    // }
+
+    const public = db.collection('usuarios').doc(uid);
+
+
+
+    //     var setWithMerge = public.set({
+    //       publicaciones
+    // }, { merge: true }).then(function () {
+    //    // limpio los input
+    //      $$('#receta-titulo').val('');
+    //      $$('#receta-descripcion').val('');
+    //    })
+    //    .catch(function (error) {
+    //      console.error(error)
+    //    })
+
+
+     public.collection('publicaciones').add({
+          titulo,
+          descripcion
+     }).then(function () {
+         // limpio los input
+         $$('#receta-titulo').val('');
+
+         $$('#receta-descripcion').val('');
+
+    }).catch(function (error) {
+         console.error(error)
+    })
+
+    const eliminarPublicacion = id => public.collection('publicaciones').doc(id).delete();
+
+    public.collection('publicaciones').onSnapshot((querySnapshot) => {
     
-    querySnapshot.forEach((doc) => {
-      
-      info = doc.data();
-      info.id = doc.id;
-
-      title = doc.data().titulo;
-      description = doc.data().descripcion;
-      
-
-      //posteo = "<div class='card'><div class='card-header'>" + title + "</div> <div class='card-content card-content-padding'>" + description + "</div> <div class='card-footer'><p class='row'><button class='col button button-raised'>Modificar</button><button class='col button button-raised boton-eliminar' data-id="+info.id+">Eliminar</button></p></div> </div>";
-
-      
-
-      $$('#cardPublicacion').append(`<div class='card'>
-      <div class='card-header'> ${title} </div> 
-      <div class='card-content card-content-padding'> ${description} </div> 
-      <div class='card-footer'>
-      <p class='row'>
-      <button class='col button button-raised'>Modificar</button>
-      <button class='col button button-raised btn-eliminar' data-id=" ${info.id} ">Eliminar</button>
-      </p>
-      </div> 
-      </div>`);
-
-      var btnsEliminados = document.querySelectorAll('.btn-eliminar');
-      
-      btnsEliminados.forEach(btn =>{
-         btn.addEventListener('click', async(e) =>{
-           console.log('clickeado crack')
-          await eliminarPublicacion(e.target.dataset.id)
-         })
-      })
-
-    })
-  });
-
+      querySnapshot.forEach((doc) => {
+        
+        info = doc.data();
+        info.id = doc.id;
   
-
-
-
+        title = doc.data().titulo;
+        description = doc.data().descripcion;
+       
+        $$('#cardPublicacion').append(`<div class='card'>
+        <div class='card-header'> ${title} </div> 
+        <div class='card-content card-content-padding'> ${description} </div> 
+        <div class='card-footer'>
+        <p class='row'>
+        <button class='col button button-raised'>Modificar</button>
+        <button class='col button button-raised btn-eliminar' data-id=" ${info.id} ">Eliminar</button>
+        </p>
+        </div> 
+        </div>`);
+  
+        var btnsEliminados = document.querySelectorAll('.btn-eliminar');
+        
+        btnsEliminados.forEach(btn =>{
+           btn.addEventListener('click', async(e) =>{
+             console.log('clickeado este id: ', e.target.dataset.id)
+            await eliminarPublicacion(e.target.dataset.id)
+           })
+        })
+  
+      })
+    });
+  
+  }
+  
 })
 
 /////////////////////////////////////////////// PERFIL ////////////////////////////////////////////////////
@@ -220,8 +248,41 @@ $$(document).on('page:init', '.page[data-name="perfil"]', function (e) {
   $$('#btnBuscar').on('click', function () {
     app.views.main.router.navigate("/buscador/");
   });
+
+  auth.onAuthStateChanged(user =>{
+    if (user){
+      console.log('usuario logeado: ', user)
+      setUI(user);
+    }else{
+      console.log('usuario deslogeado')
+    }
+  })
+  //seteo datos de usuario en el perfil
+  var setUI = (user) =>{
+    if(user){
+      db.collection('usuarios').doc(user.uid).get().then(doc => {
+        console.log()
+          $$('#nombreUsuario').append(`<div>${doc.data().nombreR}</div>`);
+      })
+      
+    }else{
+      console.log('paso algo que no esta bueno')
+    }
+  }
+
 })
 
+// db.collection('usuarios').onSnapshot((querySnapshot) => {    
+//   querySnapshot.forEach((doc) => {
+    
+//     info = doc.data();
+//     console.log(info);
+    
+
+//     $$('#nombreUsuario').append(``);
+
+//   })
+// });
 
 /////////////////////////////////////////////// BUSCADOR ////////////////////////////////////////////////////
 
