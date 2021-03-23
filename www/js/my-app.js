@@ -43,7 +43,7 @@ var mainView = app.views.create('.view-main');
 
 var db = firebase.firestore()
 var auth = firebase.auth();
-
+var public;
 
 var colUsuarios = db.collection("usuarios");
 
@@ -88,7 +88,7 @@ $$(document).on('page:init', '.page[data-name="index"]', function (e) {
       .catch((error) => {
         var errorCode = error.code;
         var errorMessage = error.message;
-        alert(errorCode)
+        console.log(errorCode)
       });
   }
 })
@@ -122,9 +122,9 @@ $$(document).on('page:init', '.page[data-name="registro"]', function (e) {
         var errorCode = error.code;
         var errorMessage = error.message;
         if (errorCode == 'auth/weak-password') {
-          alert('Clave muy débil.');
+          console.log('Clave muy débil.');
         } else {
-          alert(errorMessage);
+          console.log(errorMessage);
         }
         console.log(error);
       });
@@ -136,7 +136,7 @@ $$(document).on('page:init', '.page[data-name="registro"]', function (e) {
 
 $$(document).on('page:init', '.page[data-name="principal"]', function (e) {
   $$('#btnPublicar').on('click', fnPublicar);
-  
+  // fnMostrar();
   // botones toolbar
   $$('#btnPerfil').on('click', function () {
     app.views.main.router.navigate("/perfil/");
@@ -148,7 +148,7 @@ $$(document).on('page:init', '.page[data-name="principal"]', function (e) {
     app.views.main.router.navigate("/buscador/");
   });
 
-
+  
 
   function fnPublicar() {
     // almaceno lo que quiero guardar
@@ -167,8 +167,8 @@ $$(document).on('page:init', '.page[data-name="principal"]', function (e) {
     //   }
     // }
 
-    const public = db.collection('usuarios').doc(uid);
-
+     public = db.collection('usuarios').doc(uid);
+    console.log('este es el uid: ', uid);
 
 
     //     var setWithMerge = public.set({
@@ -197,9 +197,9 @@ $$(document).on('page:init', '.page[data-name="principal"]', function (e) {
     })
 
     const eliminarPublicacion = id => public.collection('publicaciones').doc(id).delete();
-
+    //pasar a funcion
     public.collection('publicaciones').onSnapshot((querySnapshot) => {
-    
+      $$('#cardPublicacion').html('');
       querySnapshot.forEach((doc) => {
         
         info = doc.data();
@@ -208,25 +208,32 @@ $$(document).on('page:init', '.page[data-name="principal"]', function (e) {
         title = doc.data().titulo;
         description = doc.data().descripcion;
        
-        $$('#cardPublicacion').append(`<div class='card'>
+        $$('#cardPublicacion').append(`<div class='card' id="z${info.id}">
         <div class='card-header'> ${title} </div> 
         <div class='card-content card-content-padding'> ${description} </div> 
         <div class='card-footer'>
         <p class='row'>
         <button class='col button button-raised'>Modificar</button>
-        <button class='col button button-raised btn-eliminar' data-id=" ${info.id} ">Eliminar</button>
+        <button class='col button button-raised btn-eliminar' id="btn-${info.id}">Eliminar</button>
         </p>
         </div> 
         </div>`);
-  
-        var btnsEliminados = document.querySelectorAll('.btn-eliminar');
-        
-        btnsEliminados.forEach(btn =>{
-           btn.addEventListener('click', async(e) =>{
-             console.log('clickeado este id: ', e.target.dataset.id)
-            await eliminarPublicacion(e.target.dataset.id)
-           })
+        $$('.btn-eliminar').on('click', function(){
+          console.log(this.id)
+          esteID=this.id
+          elID = esteID.replace("btn-","");
+          $$('#z'+elID).html('');
+          public.collection('publicaciones').doc(elID).delete();
         })
+        
+        // var btnsEliminados = document.querySelectorAll('.btn-eliminar');
+        
+        // btnsEliminados.forEach(btn =>{
+        //    btn.addEventListener('click', async(e) =>{
+        //      console.log('clickeado este id: ', e.target.dataset.id)
+        //     await eliminarPublicacion(e.target.dataset.id)
+        //    })
+        // })
   
       })
     });
@@ -302,7 +309,42 @@ $$(document).on('page:init', '.page[data-name="buscador"]', function (e) {
 
 
 
+// function fnMostrar(){
+//   public.collection('publicaciones').onSnapshot((querySnapshot) => {
+  
+//     querySnapshot.forEach((doc) => {
+      
+//       info = doc.data();
+//       info.id = doc.id;
 
+//       title = doc.data().titulo;
+//       description = doc.data().descripcion;
+     
+//       $$('#cardPublicacion').append(`<div class='card' id="${info.id}">
+//       <div class='card-header'> ${title} </div> 
+//       <div class='card-content card-content-padding'> ${description} </div> 
+//       <div class='card-footer'>
+//       <p class='row'>
+//       <button class='col button button-raised'>Modificar</button>
+//       <button class='col button button-raised btn-eliminar' id="btn-${info.id}">Eliminar</button>
+//       </p>
+//       </div> 
+//       </div>`);
+//       $$('.btn-eliminar').on('click', function(){
+//         console.log(this.id)
+//       })
+//       //  var btnsEliminados = document.querySelectorAll('.btn-eliminar');
+      
+//       //  btnsEliminados.forEach(btn =>{
+//       //     btn.addEventListener('click', async(e) =>{
+//       //       console.log('clickeado este id: ', e.target.dataset.id)
+//       //      await eliminarPublicacion(e.target.dataset.id)
+//       //     })
+//       //  })
+
+//     })
+//   })
+// }
 
 
 
