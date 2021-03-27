@@ -159,28 +159,10 @@ $$(document).on('page:init', '.page[data-name="principal"]', function (e) {
     let user = firebase.auth().currentUser
     let uid = user.uid
 
-    //lo que quiero setear para guardar en la db
-    // let publicaciones = {
-    //   publicacion : {
-    //     Titulo: titulo,
-    //     Descripcion: descripcion
-    //   }
-    // }
 
      public = db.collection('usuarios').doc(uid);
-    console.log('este es el uid: ', uid);
+     console.log('este es el uid: ', uid);
 
-
-    //     var setWithMerge = public.set({
-    //       publicaciones
-    // }, { merge: true }).then(function () {
-    //    // limpio los input
-    //      $$('#receta-titulo').val('');
-    //      $$('#receta-descripcion').val('');
-    //    })
-    //    .catch(function (error) {
-    //      console.error(error)
-    //    })
 
 
      public.collection('publicaciones').add({
@@ -196,7 +178,7 @@ $$(document).on('page:init', '.page[data-name="principal"]', function (e) {
          console.error(error)
     })
 
-    const eliminarPublicacion = id => public.collection('publicaciones').doc(id).delete();
+    
     //pasar a funcion
     public.collection('publicaciones').onSnapshot((querySnapshot) => {
       $$('#cardPublicacion').html('');
@@ -213,7 +195,7 @@ $$(document).on('page:init', '.page[data-name="principal"]', function (e) {
         <div class='card-content card-content-padding'> ${description} </div> 
         <div class='card-footer'>
         <p class='row'>
-        <button class='col button button-raised'>Modificar</button>
+        <button class='col button button-raised btn-modificar' id="btn-${info.id}">Modificar</button>
         <button class='col button button-raised btn-eliminar' id="btn-${info.id}">Eliminar</button>
         </p>
         </div> 
@@ -225,19 +207,16 @@ $$(document).on('page:init', '.page[data-name="principal"]', function (e) {
           $$('#z'+elID).html('');
           public.collection('publicaciones').doc(elID).delete();
         })
-        
-        // var btnsEliminados = document.querySelectorAll('.btn-eliminar');
-        
-        // btnsEliminados.forEach(btn =>{
-        //    btn.addEventListener('click', async(e) =>{
-        //      console.log('clickeado este id: ', e.target.dataset.id)
-        //     await eliminarPublicacion(e.target.dataset.id)
-        //    })
-        // })
-  
+        $$('.btn-modificar').on('click', function(){
+          //receta-titulo
+          //receta-descripcion
+          $$('#receta-titulo').val();
+          $$('#receta-descripcion').val();
+
+        })
       })
     });
-  
+    
   }
   
 })
@@ -279,18 +258,6 @@ $$(document).on('page:init', '.page[data-name="perfil"]', function (e) {
 
 })
 
-// db.collection('usuarios').onSnapshot((querySnapshot) => {    
-//   querySnapshot.forEach((doc) => {
-    
-//     info = doc.data();
-//     console.log(info);
-    
-
-//     $$('#nombreUsuario').append(``);
-
-//   })
-// });
-
 /////////////////////////////////////////////// BUSCADOR ////////////////////////////////////////////////////
 
 $$(document).on('page:init', '.page[data-name="buscador"]', function (e) {
@@ -304,6 +271,11 @@ $$(document).on('page:init', '.page[data-name="buscador"]', function (e) {
   $$('#btnBuscar').on('click', function () {
     app.views.main.router.navigate("/buscador/");
   });
+
+
+  //ref.collection('usuarios').orderBy('nombreR').startAt(nombreR).endAt(nombreR+'\uf8ff')
+
+
 })
 
 
