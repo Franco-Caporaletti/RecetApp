@@ -255,7 +255,31 @@ $$(document).on('page:init', '.page[data-name="perfil"]', function (e) {
       console.log('paso algo que no esta bueno')
     }
   }
+  let user = firebase.auth().currentUser
+  let uid = user.uid
+  public = db.collection('usuarios').doc(uid);
 
+  public.collection('publicaciones').onSnapshot((querySnapshot) => {
+    
+    querySnapshot.forEach((doc) => {      
+      info = doc.data();
+      info.id = doc.id;
+      title = doc.data().titulo;
+      description = doc.data().descripcion;
+     
+      $$('#listaPubliPerfil').append(`<li>
+      <a href="#" class="item-link item-content">
+        <div class="item-media"><img src="https://cdn.framework7.io/placeholder/fashion-88x88-2.jpg" width="80" /></div>
+        <div class="item-inner">
+          <div class="item-title-row">
+            <div class="item-title">${title}</div>
+          </div>
+          <div class="item-text">${description}</div>
+        </div>
+      </a></li>`);
+      
+    })
+  });
 })
 
 /////////////////////////////////////////////// BUSCADOR ////////////////////////////////////////////////////
@@ -272,7 +296,22 @@ $$(document).on('page:init', '.page[data-name="buscador"]', function (e) {
     app.views.main.router.navigate("/buscador/");
   });
 
-
+  colUsuarios.onSnapshot((querySnapshot) => {
+    // $$('#').html('');
+    querySnapshot.forEach((doc) => {
+      console.log(doc.data())
+       $$('#listaUsuarios').append(`<li>
+       <div class="item-content">
+        <div class="item-media"><img src="https://cdn.framework7.io/placeholder/fashion-88x88-2.jpg" width="44" /></div>
+         <div class="item-inner">
+          <div class="item-title-row">
+            <div class="item-title">${doc.data().nombreR}</div>
+          </div>
+         </div>
+        </div>
+       </li>`);
+    })
+  });
   //ref.collection('usuarios').orderBy('nombreR').startAt(nombreR).endAt(nombreR+'\uf8ff')
 
 
